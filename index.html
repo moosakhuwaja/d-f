@@ -1,57 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>prod</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .hidden { display: none; }
-    label { display: block; margin-top: 10px; }
-    input, button { padding: 8px; width: 300px; }
-  </style>
+  <title>Prod</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
-<h2>Step 1: Upload Test File</h2>
-<form id="step1Form">
-  <label>Upload File:
-    <input type="file" name="file" required>
-  </label>
-  <button type="submit">Upload & Process</button>
-</form>
+<div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
+  <h2 class="text-2xl font-bold text-gray-800 mb-6">Step 1: Upload Test File</h2>
 
-<div id="loading" class="hidden">Processing your file… Please wait.</div>
-
-<div id="step2" class="hidden">
-  <h2>Step 2: Review & Confirm</h2>
-  <form id="finalForm">
-    <label>Student ID:
-      <input type="text" name="id" id="idField">
-    </label>
-    <label>Name:
-      <input type="text" name="name" id="nameField">
-    </label>
-    <label>Total Marks:
-      <input type="text" name="totalMarks" id="totalMarksField">
-    </label>
-    <label>Obtained Marks:
-      <input type="text" name="obtainedMarks" id="obtainedMarksField">
-    </label>
-    <label>Test Name:
-      <input type="text" name="testName" id="testNameField">
-    </label>
-    <button type="submit">Submit Final</button>
+  <form id="step1Form" class="space-y-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Upload File:</label>
+      <input type="file" name="file" id="fileInput" required
+        class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+    </div>
+    <button type="submit"
+      class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+      Upload & Process
+    </button>
   </form>
+
+  <div id="loading" class="hidden mt-4 text-blue-600 font-semibold">Processing your file… Please wait.</div>
+
+  <div id="step2" class="hidden mt-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Step 2: Review & Confirm</h2>
+    <form id="finalForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Name:</label>
+        <input type="text" name="name" id="nameField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Surname:</label>
+        <input type="text" name="surname" id="surnameField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">ID Number:</label>
+        <input type="text" name="idNumber" id="idNumberField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Subject:</label>
+        <input type="text" name="subject" id="subjectField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Total Marks:</label>
+        <input type="text" name="totalMarks" id="totalMarksField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Obtained Marks:</label>
+        <input type="text" name="obtainedMarks" id="obtainedMarksField" class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+      </div>
+      <button type="submit"
+        class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+        Submit Final
+      </button>
+    </form>
+  </div>
 </div>
 
 <script>
+let uploadedFile; // store original file for final submission
+
+// Step 1 submission - send file to n8n for processing
 document.getElementById('step1Form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
   document.getElementById('loading').classList.remove('hidden');
 
-  const formData = new FormData(this);
+  const fileInput = document.getElementById('fileInput');
+  uploadedFile = fileInput.files[0]; // store file
 
-  // Send file to n8n webhook
+  const formData = new FormData();
+  formData.append('file', uploadedFile);
+
   const res = await fetch("https://haris001.app.n8n.cloud/webhook-test/0b62f7dc-160b-4e76-a247-4d911690effd", {
     method: "POST",
     body: formData
@@ -61,15 +82,38 @@ document.getElementById('step1Form').addEventListener('submit', async function(e
 
   document.getElementById('loading').classList.add('hidden');
 
-  // Fill fields
-  document.getElementById('idField').value = data.id || '';
+  // Fill fields with extracted values
   document.getElementById('nameField').value = data.name || '';
+  document.getElementById('surnameField').value = data.surname || '';
+  document.getElementById('idNumberField').value = data.idNumber || '';
+  document.getElementById('subjectField').value = data.subject || '';
   document.getElementById('totalMarksField').value = data.totalMarks || '';
   document.getElementById('obtainedMarksField').value = data.obtainedMarks || '';
-  document.getElementById('testNameField').value = data.testName || '';
 
   // Show Step 2
   document.getElementById('step2').classList.remove('hidden');
+});
+
+// Step 2 submission - send all fields + original file to final webhook
+document.getElementById('finalForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const finalData = new FormData(this);
+  if (uploadedFile) {
+    finalData.append('file', uploadedFile); // include original file
+  }
+
+  const res = await fetch("https://your-final-save-webhook-url", {
+    method: "POST",
+    body: finalData
+  });
+
+  if (res.ok) {
+    alert("Form submitted successfully!");
+    location.reload();
+  } else {
+    alert("There was an error submitting the form.");
+  }
 });
 </script>
 
