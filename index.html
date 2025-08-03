@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Submission</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .hidden { display: none; }
+    label { display: block; margin-top: 10px; }
+    input, button { padding: 8px; width: 300px; }
+  </style>
+</head>
+<body>
+
+<h2>Step 1: Upload Test File</h2>
+<form id="step1Form">
+  <label>Upload File:
+    <input type="file" name="file" required>
+  </label>
+  <button type="submit">Upload & Process</button>
+</form>
+
+<div id="loading" class="hidden">Processing your file… Please wait.</div>
+
+<div id="step2" class="hidden">
+  <h2>Step 2: Review & Confirm</h2>
+  <form id="finalForm">
+    <label>Student ID:
+      <input type="text" name="id" id="idField">
+    </label>
+    <label>Name:
+      <input type="text" name="name" id="nameField">
+    </label>
+    <label>Total Marks:
+      <input type="text" name="totalMarks" id="totalMarksField">
+    </label>
+    <label>Obtained Marks:
+      <input type="text" name="obtainedMarks" id="obtainedMarksField">
+    </label>
+    <label>Test Name:
+      <input type="text" name="testName" id="testNameField">
+    </label>
+    <button type="submit">Submit Final</button>
+  </form>
+</div>
+
+<script>
+document.getElementById('step1Form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  document.getElementById('loading').classList.remove('hidden');
+
+  const formData = new FormData(this);
+
+  // Send file to n8n webhook
+  const res = await fetch("https://dada37.app.n8n.cloud/webhook-test/6a2fd9a3-309a-4d87-9d25-db36f37be892", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+
+  document.getElementById('loading').classList.add('hidden');
+
+  // Fill fields
+  document.getElementById('idField').value = data.id || '';
+  document.getElementById('nameField').value = data.name || '';
+  document.getElementById('totalMarksField').value = data.totalMarks || '';
+  document.getElementById('obtainedMarksField').value = data.obtainedMarks || '';
+  document.getElementById('testNameField').value = data.testName || '';
+
+  // Show Step 2
+  document.getElementById('step2').classList.remove('hidden');
+});
+</script>
+
+</body>
+</html>
